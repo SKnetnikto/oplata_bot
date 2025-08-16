@@ -48,23 +48,25 @@ async def handle_message(message):
 # === Обработка оплаты от Free-Kassa ===
 async def freekassa_handler(request):
     data = await request.post()
+    print("FreeKassa data:", dict(data))  # Логируем входящие данные
     try:
         merchant_id = data.get('MERCHANT_ID')
         amount = data.get('AMOUNT')
-        order_id = data.get('MERCHANT_ORDER_ID')  # это user_id
+        order_id = data.get('MERCHANT_ORDER_ID')
         sign = data.get('SIGN')
-
-        # Проверка подписи
+        print(f"Received: merchant_id={merchant_id}, amount={amount}, order_id={order_id}, sign={sign}")
         check_sign = hashlib.md5(f"{merchant_id}:{amount}:{FREEKASSA_SECRET}:{order_id}".encode()).hexdigest()
-
+        print(f"Generated sign: {check_sign}")
         if sign.lower() == check_sign.lower():
             user_id = int(order_id)
             paid_users.add(user_id)
             await bot.send_message(user_id, "✅ Оплата прошла! Теперь /random")
             return web.Response(text="OK")
         else:
+            print("Signature mismatch")
             return web.Response(text="SIGN ERROR", status=400)
     except Exception as e:
+        print(f"Error in freekassa_handler: {str(e)}")
         return web.Response(text=f"ERROR: {str(e)}", status=500)
 
 # === Веб-сервер ===
