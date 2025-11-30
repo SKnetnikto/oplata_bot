@@ -1,6 +1,6 @@
 # main.py
 import os
-import random
+import random # ну напрягись, братан!!
 from aiogram import Bot, Dispatcher
 from aiohttp import web
 import hashlib
